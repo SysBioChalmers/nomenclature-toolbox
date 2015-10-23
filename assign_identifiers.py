@@ -4,6 +4,7 @@
 # Importing all the neccessary packages
 import xml.etree.ElementTree as ET
 import os,sys,zipfile,re,itertools,xlrd, csv, itertools
+from collections import defaultdict
 
 # Intitialising variables
 
@@ -54,16 +55,24 @@ mets_id = get_element("mets.tsv",8)
 mets_composition = get_element("mets.tsv",5)
 
 ''' Get Chebi metabolites names and ids'''
-Chebi_metabolite_name = get_element("names.tsv",4)
-Chebi_id = get_Chebi("names.tsv",0)
+Chebi_metabolite_name = get_element("compounds.tsv",5)
+Chebi_id = get_Chebi("compounds.tsv",0)
 
 '''MAP Chebi Metabolite name to Chebi ID'''
 Chebi_dictionary = dict(zip(Chebi_metabolite_name,Chebi_id))
 
+Chebi_inverse_dictionary =  dict((v,k) for k,v in Chebi_dictionary.items())
+
+
+
+
 ''' Get Chebi metabolites names and ids'''
 formula = get_element("ChEBI_KEGG_conversion_list.tsv",4)
 Chebi_id_formula = get_Chebi("ChEBI_KEGG_conversion_list.tsv",0)
-Chemical_map= dict(zip(formula,Chebi_id_formula))
+
+'''MAP Chemical composition to Chebi ID '''
+Chemical_map= dict(zip(Chebi_id_formula, formula))
+
 
 
 ''' Get InChi metabolites  ids'''
@@ -80,30 +89,41 @@ for index, metabolite in enumerate(mets_name):
 	if metabolite in Chebi_dictionary:
 		chebiid=Chebi_dictionary.get(metabolite)
 		if chebiid in InChi_dictionary:
-			print mets_id[index], "\t", metabolite, "\t", chebiid, "\t",InChi_dictionary.get(chebiid)
+			print mets_id[index], "\t", metabolite, "\t", chebiid, "\t", InChi_dictionary.get(chebiid), "\t", composition
 		else:
 			print mets_id[index], "\t", metabolite, "\t", chebiid
-	elif composition in Chemical_map:
-		chebiid=Chemical_map.get(composition)
-		if chebiid in InChi_dictionary:
-			print mets_id[index], "\t", metabolite, "\t", chebiid, "\t",InChi_dictionary.get(chebiid)
-		else:
-			print mets_id[index], "\t", metabolite, "\t", chebiid
+	if composition in formula:				#Take the metabolites Chemical Composition
+		print "Aternative Nomenclature Choices"
+		for chebi,form in zip(Chebi_id_formula, formula):
+			if composition == form:		#If the composition has a CHhEBI Id, return all the possible ids for this composition
+					if chebi in InChi_dictionary:	#If the composition has an InChi Id, return InChi string
+						print mets_id[index], "\t", metabolite, "\t", chebi, "\t",InChi_dictionary.get(chebi), "\t", form
+					else:
+						if chebi in Chebi_inverse_dictionary:
+							chebi_metabolite_name=Chebi_inverse_dictionary.get(chebi)						
+							print mets_id[index], "\t", metabolite, "\t", chebi, "\t", chebi_metabolite_name, "\t", form
+		print mets_id[index], "\t", metabolite, "\t", "Potential candidate metabolite  of lipid metabolism"				
 	else:
-		 print mets_id[index], "\t", metabolite
+		print mets_id[index], "\t", metabolite, "\t", "Unidentified metabolite-potential candidate for lipid metabolism"
+	print "\n"
+	
+	
+	
+	
+	
+	
+#''' Output function  for elements and metabolites in tsv format'''
+##for name,ids in itertools.izip_longest(mets_name,mets_id):
+##	print name,"\t",ids
 
-''' Output function  for elements and metabolites in tsv format'''
-#for name,ids in itertools.izip_longest(mets_name,mets_id):
-#	print name,"\t",ids
 
 
+#''' Output function for Chebi in tsv format'''
+##for metname,chebiids in itertools.izip_longest(Chebi_metabolite_name,Chebi_id):
+##	print metname,"\t",chebiids
 
-''' Output function for Chebi in tsv format'''
-#for metname,chebiids in itertools.izip_longest(Chebi_metabolite_name,Chebi_id):
-#	print metname,"\t",chebiids
 
-
-''' Output function for InChi in tsv format'''
-#for inchiids in itertools.izip_longest(Inchi_id):
-#	print inchiids
+#''' Output function for InChi in tsv format'''
+##for inchiids in itertools.izip_longest(Inchi_id):
+##	print inchiids
 
