@@ -1,0 +1,4 @@
+
+# Do not include tmp version of matlab files/txt files
+*.m~
+*.txt~
