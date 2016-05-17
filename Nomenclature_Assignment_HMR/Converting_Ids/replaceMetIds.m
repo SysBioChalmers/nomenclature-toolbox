@@ -18,6 +18,7 @@ function [ newComponents ] = replaceMetIds( components )
 %   
 %   Dimitra Lappa, 2015-12-10
 
+newComponents=components;
     for i=1:length(components)
         metabolite = char(components{i,1}); 
         if strcmp(metabolite(1:1), 'm')
@@ -29,9 +30,7 @@ function [ newComponents ] = replaceMetIds( components )
             temp2 = metabolite(5:length(metabolite));
             newComponents{i,1} = strcat(temp1, '_00_', temp2);
         end
-    end
-    
- 
+    end 
 end
 
 

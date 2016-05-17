@@ -11,7 +11,7 @@ function [ reactions ] = loadRxns( model )
 %   Dimitra Lappa, 2016-01-23
 
 
-    rxnId = cell2table(model.ihuman.rxns);
+    rxnId = cell2table(model.rxns);
     rxnId.Properties.VariableNames{'Var1'} = 'reaction_id';
     rxnsId = table2array(rxnId);
 

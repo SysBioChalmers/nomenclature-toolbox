@@ -1,14 +1,29 @@
-clear
+%clear
 tic
 % Loading Genome'Scale Metabolic Mode  
-model=loadModel;
+model=model2;
 
 % Adding a chebi field into the gem model's matlab structure
-model.ihuman.chebis=cell(6006,1);
+%model.chebis=cell(6006,1);
 
 % Converting model's metabolites and reactions identifiers according ti
 % SysBio standars
-model.ihuman = convertIdsSysBioStandars(model.ihuman);
+model = convertIdsSysBioStandars(model);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fileID = fopen('ModelSEED-compounds-db.csv');
+chemicalFormula = textscan(fileID,'%s %s %s %s %s %s %s %s %s %s','delimiter',';');
+fclose(fileID);
+
+dict=containers.Map( chemicalFormula{1}, chemicalFormula{6});
+
+model.metFormulas=cell(numel(model.mets),1);
+for i=1:numel(model.mets)
+    model.metFormulas{i}=dict(strtok(model.mets{i},'_'))
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Converting Model Matlab Cell structures  for metabolites' feature to
 % tables
@@ -37,10 +52,10 @@ startingPoint=provideStartingPointPromptMsg(model);
 %Loop through your metabolites and find annotation in Dictionary archives
 for i=startingPoint:length(metName)
     %Ask user for continuing process
-    assigning = continueAssigningIdsPromptMsg(startingPoint);
-    if assigning == false
-        break
-    end
+    %assigning = continueAssigningIdsPromptMsg(startingPoint);
+    %if assigning == false
+    %    break
+    %end
     
     %Loading metabolites features into temporary variables
     name = metName{i};, id = metId{i};, formula = metFormula{i};
@@ -57,8 +72,7 @@ for i=startingPoint:length(metName)
     
     %If the name of the metabolite is standardised and agrees with official
     %ChEBI nomenclature
-    [stored_chebi_2, stored_inchi_2] = getChebiInchiBasedOnMetName(fileID,...
-        name, id, formula, chEbI2InChIMap, metaboliteNames2ChEBIMap);
+    [stored_chebi_2, stored_inchi_2] = getChebiInchiBasedOnMetName(fileID,name, id, formula, chEbI2InChIMap, metaboliteNames2ChEBIMap);
     
     %If the name does not correspond there, perform a search in the ChEBI
     %Database file given Chemical formula    
@@ -66,7 +80,7 @@ for i=startingPoint:length(metName)
         name, id, formula, chEbI2InChIMap, chEBIChemicalFormula);
     
     %Store the identifiers in the genome-scale metabolic model's matlab structure
-    model.ihuman = storeIdentifiers(model.ihuman, i,stored_chebi_2,...
+    model = storeIdentifiers(model, i,stored_chebi_2,...
         stored_inchi_2, stored_chebi_3, stored_inchi_3);
     startingPoint=i;
 end

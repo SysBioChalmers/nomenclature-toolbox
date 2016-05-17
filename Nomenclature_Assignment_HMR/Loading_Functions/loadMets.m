@@ -14,15 +14,15 @@ function [ metabolites, metsIds, metsNames, metsFormulas ] = loadMets( model )
 %
 %   Dimitra Lappa, 2016-01-23
 
-    metId = cell2table(model.ihuman.mets);
+    metId = cell2table(model.mets);
     metId.Properties.VariableNames{'Var1'} = 'metabolite_id';
     metsIds = table2array(metId);
 
-    metFormula = cell2table(model.ihuman.metFormulas);
+    metFormula = cell2table(model.metFormulas);
     metFormula.Properties.VariableNames{'Var1'} = 'metabolite_formula';
     metsFormulas = table2array(metFormula);
 
-    metName = cell2table(model.ihuman.metNames);
+    metName = cell2table(model.metNames);
     metName.Properties.VariableNames{'Var1'} = 'metabolite_name';
     metsNames = table2array(metName);
 

@@ -1,0 +1,3 @@
+[submodule "external/ModelSEEDDatabase"]
+	path = external/ModelSEEDDatabase
+	url = git@github.com:ModelSEED/ModelSEEDDatabase.git

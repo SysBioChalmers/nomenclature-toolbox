@@ -28,7 +28,7 @@ if isempty(str)
 end
 startingPoint = str2num(str);
 
-if startingPoint > length(model.ihuman.mets)
+if startingPoint > length(model.mets)
     fprintf('Cannot proceeding in identifiers assignment, index out of range \n \n');
 else
     if isempty(str)

@@ -23,18 +23,20 @@ function [ stored_chebi_2, stored_inchi_2 ] = getChebiInchiBasedOnMetName(fileID
 %
 %   Dimitra Lappa, 2016-01-25
 
+stored_chebi_2=[];
+stored_inchi_2=[];
 
 if isKey(metaboliteNames2ChEBIMap, name)
-        chebi = metaboliteNames2ChEBIMap(name);
-        if isKey(chEbI2InChIMap, chebi)
-            inchi = chEbI2InChIMap(chebi);
-            cprintf('blue','%s \t %s \t %s \t %s \n \n',id, name, formula, chebi, inchi);
-            fprintf(fileID, '%s \t %s \t %s \t %s \n \n',id, name, formula, chebi, inchi);
-            fprintf('If this is your choice of annotation please press 2 \n \n');
-            stored_chebi_2 = chebi;
-            stored_inchi_2 = inchi;
-        end
+    chebi = metaboliteNames2ChEBIMap(name);
+    if isKey(chEbI2InChIMap, chebi)
+        inchi = chEbI2InChIMap(chebi);
+        cprintf('blue','%s \t %s \t %s \t %s \n \n',id, name, formula, chebi, inchi);
+        fprintf(fileID, '%s \t %s \t %s \t %s \n \n',id, name, formula, chebi, inchi);
+        fprintf('If this is your choice of annotation please press 2 \n \n');
+        stored_chebi_2 = chebi;
+        stored_inchi_2 = inchi;
     end
-
+else
+    disp('Metabolite name not found.')
 end
 
