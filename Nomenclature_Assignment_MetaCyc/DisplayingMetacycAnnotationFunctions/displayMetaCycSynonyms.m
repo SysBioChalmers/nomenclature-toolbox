@@ -14,10 +14,15 @@ function displayMetaCycSynonyms( metaCycName, metaCycMetNameSynonyms)
 
            
     Index=find(ismember([metaCycMetNameSynonyms{:}], metaCycName));
-    if Index ~= []
+    if ~isempty(Index)
         fprintf('\nMetabolite synonyms as found in Metacyc based on metabolites chemical formula \n');
-        disp(metaCycMetNameSynonyms{Index,2});
+        for i=1:length(Index)
+            disp(metaCycMetNameSynonyms{Index(i),2});
+        end
+    else
+        fprintf('\n NO Metabolite synonyms \n');
     end
-
+    
+    
 end
 

@@ -24,32 +24,41 @@ function [ metaCycAnnotation ] = displayMetacycIds( model, starting_point,metaCy
     %Find if the Metabolite exists in MetCyc archives via Chemical Formula
     %Present  Metacyc name
        metaCycAnnotation = {};
-       j=starting_point; 
+       j=starting_point;
        index=find(ismember(metaCycIdFormulaInChiMapping{1,2},model.metFormulas(j)));
-       fprintf('There are %i instances of this Metabolite in MetaCyc Archives \n', length(index));
-       for k=1:length(index)
-           fprintf('\nMetabolite name and formula as annotated in the model\n');
-           disp(model.metNames(j));
-           disp(model.metFormulas(j));
-           
-           fprintf('\nMetabolite ID as found in Metacyc based on metabolites chemical formula \n');
-           disp(metaCycIdFormulaInChiMapping{1,1}{index(k),1});
-           metaCycId = metaCycIdFormulaInChiMapping{1,1}{index(k),1};
-           metaCycName = displayMetaCycName(metaCycId, metaCycIdMetName );
-           
-           displayMetaCycSynonyms(metaCycName, metaCycMetNameSynonyms);
-           
-           fprintf('\nMetabolite formula as found in Metacyc based on metabolites chemical formula \n');
-           disp(metaCycIdFormulaInChiMapping{1,2}{index(k),1});
-           
-           fprintf('\nMetabolite InChI string as found in Metacyc based on metabolites chemical formula \n');
-           disp(metaCycIdFormulaInChiMapping{1,3}{index(k),1}), fprintf('\n');
+       fprintf('\nMetabolite name and formula as annotated in the model\n');
+       disp(model.metNames(j));
+       disp(model.metFormulas(j));
+       if (~isempty(model.metFormulas{j,1})) && (~isempty(index))
+           fprintf('There are %i instances of this Metabolite in MetaCyc Archives \n', length(index));
+           for k=1:length(index)
+                   fprintf('\nMetabolite ID as found in Metacyc based on metabolites chemical formula \n');
+                   disp(metaCycIdFormulaInChiMapping{1,1}{index(k),1});
+                   metaCycId = metaCycIdFormulaInChiMapping{1,1}{index(k),1};
+                   metaCycName = displayMetaCycName(metaCycId, metaCycIdMetName );
+
+                   displayMetaCycSynonyms(metaCycName, metaCycMetNameSynonyms);
+
+                   fprintf('\nMetabolite formula as found in Metacyc based on metabolites chemical formula \n');
+                   disp(metaCycIdFormulaInChiMapping{1,2}{index(k),1});
+
+                   fprintf('\nMetabolite InChI string as found in Metacyc based on metabolites chemical formula \n');
+                   disp(metaCycIdFormulaInChiMapping{1,3}{index(k),1}), fprintf('\n');
+                   disp('--------------------------------------------------------------------------------------------------------');
+                   fprintf('This choice of annotation is %i \n', k);
+                   metaCycAnnotation{k,1} = metaCycIdFormulaInChiMapping{1,1}{index(k),1};
+                   metaCycAnnotation{k,2} = metaCycName;
+                   metaCycAnnotation{k,3} = metaCycIdFormulaInChiMapping{1,3}{index(k),1};
+           end
+       else
+           fprintf('\nMetabolite ID was not found in Metacyc based on metabolites chemical formula \n');
+           metaCycAnnotation{1,1} = '';
+           metaCycAnnotation{1,2} = '';
+           metaCycAnnotation{1,3} = '';
            disp('--------------------------------------------------------------------------------------------------------');
-           fprintf('This choice of annotation is %i \n', k);
-           metaCycAnnotation{k,1} = metaCycIdFormulaInChiMapping{1,1}{index(k),1};
-           metaCycAnnotation{k,2} = metaCycName;
-           metaCycAnnotation{k,3} = metaCycIdFormulaInChiMapping{1,3}{index(k),1};
+           fprintf('This choice of annotation is 1 \n');
        end
+           
 
 end
 
