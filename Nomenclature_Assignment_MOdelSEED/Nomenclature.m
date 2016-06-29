@@ -1,26 +1,40 @@
 clear
 tic
-% Loading Genome'Scale Metabolic Mode  
-model=readCbModel();
+%% Loading Genome'Scale Metabolic Mode  
+load('52Models.mat');
 
-% Adding a formula field into the gem model's matlab structure
-model.metFormula=cell(904,1);
+%% Adding fields into the gem model's matlab structure
+for i=1:length(model)
+    %Adding a metabolite formula field to the model 
+    model(i).metFormula=cell(length(model(i).mets),1);
+    
+    %Adding a metabolite DeltG, DeltaG error field to the model
+    model(i).metDeltaG = cell(length(model(i).mets),2);
+    
+    %Adding a reaction DeltG field to the model
+    model(i).rxnDeltaG = cell(length(model(i).rxns),1);
+    
+    %Adding a reaction KEGG identifier field to the model
+    model(i).rxnKEGGID = cell(length(model(i).rxns),1);
+    
+    % Converting model's metabolites and reactions identifiers according to
+    % SysBio standars
+    model(i)= convertIdsSysBioStandars(model(i));
+end
 
-% Converting model's metabolites and reactions identifiers according ti
-% SysBio standars
-model= convertIdsSysBioStandars(model);
-
-% Starting Assigning Identifiers Process
-
-%Loading Flatfiles with standardised CHEBI and INCHI Identifiers 
+%% Loading Flatfiles with standardised CHEBI and INCHI Identifiers 
 %and create cell arrays with correspondance
 chEBIMetaboliteNames = loadChEBI2MetNames('compounds.tsv');
 chEBIInChI = loadChEBI2InChI('chebiIdInchi.tsv');
 chEBIChemicalFormula = loadChEBI2ChemicalFormula('chemicalData.tsv');
 modelSeedMetNameFormula = loadmodelSeedMetNameFormula('modelSEEDcompounds.txt');
 modelSeedMetNameSynonyms = loadmodelSeedMetNameSynonyms('modelSeedSynonyms.txt');
+modelSeedMetIdDeltaG = loadmodelSeedMetIdDeltaG('DeltaG.txt');
+modelSeedKEGG = loadmodelSeedKEGG('modelseedKEGG.txt');
+modelSeedECNmbers = loadmodelSeedECNumbers('modelseedECNumbers.txt');
 
-% Create dictionaries
+
+%% Create dictionaries
 [metaboliteNames2ChEBIMap, chEbI2InChIMap, chemicalFormula2ChEBIMap] = ...
     createDictionaries(chEBIMetaboliteNames, chEBIInChI, chEBIChemicalFormula);
 
@@ -29,8 +43,29 @@ modelSeedMetNameSynonyms = loadmodelSeedMetNameSynonyms('modelSeedSynonyms.txt')
 [modelSeedMetaboliteNames2FormulaMap, modelSeedMetaboliteIds2FormulaMap] = ...
     createModelSeedDictionaries(modelSeedMetNameFormula);
 
-%Assign Formula to ModelSeed Ids
-model.metFormula = assignModelSeedFormula(model.mets, modelSeedMetNameFormula);
+%% Starting Assigning Identifiers Process
+
+for i=1:length(model)
+        %Assign Formula to ModelSeed Ids
+        model(i).metFormula = assignModelSeedFormula(model(i).mets, modelSeedMetNameFormula);
+
+        %Assign DeltaG values to to ModelSeed Ids
+        model(i).metDeltaG = assignModelSeedDeltaG(model(i).mets, modelSeedMetIdDeltaG);
+        
+        %Assign KEGG Identifiers to to ModelSeed Metabolite Ids
+        model(i).metKEGGID = assignModelSeedMetKEGGID(model(i).mets, modelSeedKEGG);
+        
+        %Assign KEGG Identifiers to to ModelSeed Reaction Ids
+        model(i).rxnKEGGID = assignModelSeedRxnKEGGID(model(i).rxns, modelSeedKEGG);
+        
+        %Assign EC Numbers to to ModelSeed Reaction Ids
+        model(i).rxnECNumbers = assignModelSeedRxnECNumber(model(i).rxns, modelSeedECNumbers);
+        
+        %Calculate Delta Gs for all the reactions in the models
+        model(i) = calculateDeltaG(model(i), modelSeedMetIdDeltaG);
+        
+end
+        
 
 % Converting Model Matlab Cell structures  for metabolites' feature to
 % tables
@@ -61,8 +96,6 @@ for i=startingPoint:length(metName)
     
     %Printing in command prompt the current
     %information
-%     fprintf(fileID, '%s \t %s \t %s \n',id, name, formula); fprintf('%s \t %s \t %s \n',id, name, formula);
-%     fprintf('If this is your choice of annotation please press 1 \n \n');
     noIdentifiers(fileID, name, id, formula);
     
     
@@ -82,6 +115,6 @@ for i=startingPoint:length(metName)
     startingPoint=i;
 end
 fclose(fileID);
-%
-%
+
+
 toc
