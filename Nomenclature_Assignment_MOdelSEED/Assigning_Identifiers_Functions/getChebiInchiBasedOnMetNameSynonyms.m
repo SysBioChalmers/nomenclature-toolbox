@@ -48,7 +48,7 @@ function [ stored_chebi_2, stored_inchi_2 ] = getChebiInchiBasedOnMetNameSynonym
                    inchi = chEbI2InChIMap(chebi);
                    formulaAppearranceCounter = formulaAppearranceCounter +1 
                    fprintf(fileID, '%s \t %s \t %s \t %s \n \n',id, name, chebi, inchi);
-                   printf('blue', '%s \t %s \t %s \t %s \n \n',id, name, chebi, inchi);
+                   fprintf('blue', '%s \t %s \t %s \t %s \n \n',id, name, chebi, inchi);
                    fprintf('If this is your choice of annotation please press 2, %d \n \n', formulaAppearranceCounter);
                    stored_chebi_2{formulaAppearranceCounter,1}= chebi;
                    stored_inchi_2{formulaAppearranceCounter,1}= inchi;

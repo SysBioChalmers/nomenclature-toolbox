@@ -14,6 +14,7 @@ function [ model ] = convertIdsSysBioStandars(model)
     model.mets=replaceMetIds(model.mets);
     model.metNames=replaceMetIds(model.metNames);
     
-
+    fprintf('Converting  the models Reaction ids, by removing the compartment from their name \n \n');
+    model.rxns=replaceRxnIds(model.rxns);
 end
 
