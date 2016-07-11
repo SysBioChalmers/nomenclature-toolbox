@@ -1,8 +1,8 @@
 % web interface nomencalture test
-% load '~/Documents/Models/GEMQC/52Models.mat'
-% loadStuff
+load '~/Documents/Models/GEMQC/52Models.mat'
+loadStuff
 
-%ch=py.bioservices.ChEBI()
+ch=py.bioservices.ChEBI()
 
 metN=cellfun(@(x) x(1:end-3),model.metNames,'UniformOutput',false);
 
