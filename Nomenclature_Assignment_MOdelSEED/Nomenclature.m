@@ -31,7 +31,7 @@ modelSeedMetNameFormula = loadmodelSeedMetNameFormula('modelSEEDcompounds.txt');
 modelSeedMetNameSynonyms = loadmodelSeedMetNameSynonyms('modelSeedSynonyms.txt');
 modelSeedMetIdDeltaG = loadmodelSeedMetIdDeltaG('DeltaG.txt');
 modelSeedKEGG = loadmodelSeedKEGG('modelseedKEGG.txt');
-modelSeedECNmbers = loadmodelSeedECNumbers('modelseedECNumbers.txt');
+modelSeedECNumbers = loadmodelSeedECNumbers('modelseedECNumbers.txt');
 
 
 %% Create dictionaries
@@ -43,6 +43,154 @@ modelSeedECNmbers = loadmodelSeedECNumbers('modelseedECNumbers.txt');
 [modelSeedMetaboliteNames2FormulaMap, modelSeedMetaboliteIds2FormulaMap] = ...
     createModelSeedDictionaries(modelSeedMetNameFormula);
 
+
+%% Check for Short Chain Fatty Acids Production
+num_model = length(model);
+% load the short-chain fatty acid information
+scfa_info = readtable('SCFA.txt', 'Delimiter', '\t', 'ReadVariableNames',false);
+scfa_id = scfa_info{2:end, 'Var1'}
+scfa_name = scfa_info{2:end, 'Var2'}
+
+num_scfa = length(scfa_id);
+
+% for each of model check the SCFA production
+
+% create a array to store the production
+scfa_production = zeros(num_scfa, num_model);
+
+for i = 1:num_scfa
+    
+    i_scfa_name = scfa_name(i);
+    i_scfa_id = scfa_id(i);
+    
+    i_scfa_exchange_rxns_name = strcat('EX_', i_scfa_id, '_e0');
+    i_scfa_met = strcat(i_scfa_id, '_c0');
+    i_scfa_demand_rxns_name = strcat('DM_', i_scfa_met);
+    
+    for j = 1:num_model
+        
+        j_model = model(j);
+        
+        % set all the exchange rxns are free
+        [j_model, j_exchange_rxns] = set_exchange_lb(j_model, -10, 1000);
+        
+        % check if the exchange of scfa is open in the model, if yes, close
+        % it
+        i_in_exchange_status = ismember(i_scfa_exchange_rxns_name, j_exchange_rxns);
+        if i_in_exchange_status
+            j_model = changeRxnBounds(j_model, i_scfa_exchange_rxns_name, 0, 'l');
+        end
+        
+        % add the demand reaction of scfa
+        j_model = addDemandReaction(j_model, i_scfa_met);
+        
+        % change objective function
+        j_model = changeObjective(j_model, i_scfa_demand_rxns_name);
+        
+        % maximize the obj
+        j_sol = optimizeCbModel(j_model);
+        
+        scfa_production(i, j) = j_sol.f;
+        
+    end
+end
+
+save('scfa_production.mat', 'scfa_production')
+save scfa_id;
+save scfa_name;
+
+
+%% Check for Amino Acids Production
+
+% load the amino acid information
+aa_info = readtable('AA.txt', 'Delimiter', '\t', 'ReadVariableNames',false);
+aa_id = aa_info{2:end, 'Var1'}
+aa_name = aa_info{2:end, 'Var2'}
+
+num_aa = length(aa_id);
+
+% for each of model check the aa production
+
+% create a array to store the production
+aa_production = zeros(num_aa, num_model);
+
+for i = 1:num_aa
+    
+    i_aa_name = aa_name(i);
+    i_aa_id = aa_id(i);
+    
+    i_aa_exchange_rxns_name = strcat('EX_', i_aa_id, '_e0');
+    i_aa_met = strcat(i_aa_id, '_c0');
+    i_aa_demand_rxns_name = strcat('DM_', i_aa_met);
+    
+    for j = 1:num_model
+        
+        j_model = model(j);
+        
+        % set all the exchange rxns are free
+        [j_model, j_exchange_rxns] = set_exchange_lb(j_model, -10, 1000);
+        
+        % check if the exchange of aa is open in the model, if yes, close
+        % it
+        i_in_exchange_status = ismember(i_aa_exchange_rxns_name, j_exchange_rxns);
+        if i_in_exchange_status
+            j_model = changeRxnBounds(j_model, i_aa_exchange_rxns_name, 0, 'l');
+        end
+        
+        % add the demand reaction of aa
+        j_model = addDemandReaction(j_model, i_aa_met);
+        
+        % change objective function
+        j_model = changeObjective(j_model, i_aa_demand_rxns_name);
+        
+        % maximize the obj
+        j_sol = optimizeCbModel(j_model);
+        
+        aa_production(i, j) = j_sol.f;
+        
+    end
+end
+
+save('aa_production.mat', 'aa_production')
+save aa_id;
+save aa_name;
+
+%% Add Genome annotation(assigned via KBase Interface) and bioservices. Updating genome annotation, too.
+load('52GenomeFeatures')
+    
+    for i=1:length(model)
+        for j=2:(length(model(i).genes)-1)
+            model(i).genes{j}=['kb|' model(i).genes{j}];
+        end
+        model(i).genes(end)=[];
+        model(i).genes(1)=[];
+    end
+
+    genesNewE={};
+
+
+    for j=1:length(model)
+        sciName=data(j).tax.scientific_name;
+        disp(['Updating annotation for ' sciName '.']);
+
+        fieldn=fieldnames(data(j).gene);
+        genes=cell(0);
+        for i=1:length(fieldn)
+            tmp=getfield(getfield(data(j).gene,fieldn{i}),'aliases');
+            if(~isstruct(tmp))
+                if(~isempty(tmp{1}))
+                    genes{end+1}=tmp;
+                end
+            end
+        end
+        	genes=genes';
+        try
+            genesNewE{end+1}=findMapping(genes,'UniProtKB AC',sciName);
+        catch e
+            disp(e)
+        end
+    end
+		
 %% Starting Assigning Identifiers Process
 
 for i=1:length(model)
