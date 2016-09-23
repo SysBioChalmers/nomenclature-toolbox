@@ -77,7 +77,20 @@ model = assignExternalDbIds(model, 'ChEBI');
 ```matlab
 model = assignExternalDbIds(model, 'InChI');
 ```
- 
+
+#### Assigning Gene Identifiers using Bioservices
+`findMapping` is a command which uses the Uniprot web services to convert between gene identifiers of different databases. First make sure that you have bioservices installed and accessible from matlab. Then for an inpit cell array 'aliases' of different gene idnetifiers (each gene can have many initial ids), the below command returns a new set of genes ids (in this case UniProt ids).
+
+```matlab
+[geneIds,geneMaps]=findMapping(aliases,'UniProtKB AC','Escherichia coli')
+```
+Please note that this command uses online services and can take a while to finnish. Supported database identifier strings can be found like so:
+
+```matlab
+load 'mapping/uniprotIdMap.mat'
+keys(dbStr)
+```
+
 #### Metabolic Tasks
 - Checking for **Short Chain Fatty Acid Production**
 ```matlab
