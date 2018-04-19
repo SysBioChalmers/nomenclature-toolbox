@@ -1,0 +1,4 @@
+Compoiund	Name
+cpd00029	Acetate
+cpd00141	Propanoate
+cpd00211	Butyrate
